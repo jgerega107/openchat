@@ -1,4 +1,3 @@
-# openchat (working title)
+# openchat
 
-Experimental chat app.
-
+(working title) experimental chat app written in flutter and powered by firebase
