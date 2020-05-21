@@ -10,3 +10,6 @@
 /android/app/google-services.json
 .DS_Store
 /ios/GoogleService-Info.plist
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
