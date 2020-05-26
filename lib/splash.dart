@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'login.dart';
-
+/*
+Here within the SplashScreen, a number of operations will be happening. 
+Firstly, we will check to see if a user is currently logged in, and if so, just progress to the home of the app.
+If there is no user logged in, then push LoginScreen to the navigator.
+As usual with all other screens within the app, time will be spent making it look nice.
+*/
 class SplashScreen extends StatefulWidget{
   SplashState createState() => SplashState();
 }

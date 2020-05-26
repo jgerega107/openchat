@@ -4,6 +4,7 @@ import 'splash.dart';
 
 void main() => runApp(MyApp());
 
+//Start of app sequence, specifying the home screen of app.
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {

@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
+/*
+Here we will authenticate the user.
 
+Theme ideas: Possibly solid background with a nice animation or something? Buttons centered, minimal text.
+*/
 class LoginScreen extends StatelessWidget{
   @override
   Widget build(BuildContext context){
