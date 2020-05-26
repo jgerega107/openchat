@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:openchat/home.dart';
 import 'dart:async';
 import 'login.dart';
 /*
@@ -7,6 +9,8 @@ Firstly, we will check to see if a user is currently logged in, and if so, just 
 If there is no user logged in, then push LoginScreen to the navigator.
 As usual with all other screens within the app, time will be spent making it look nice.
 */
+final FirebaseAuth _auth = FirebaseAuth.instance;
+
 class SplashScreen extends StatefulWidget{
   SplashState createState() => SplashState();
 }
@@ -27,13 +31,30 @@ class SplashState extends State<SplashScreen>{
 
   startTime() async {
     var duration = new Duration(seconds: 3);
-    return new Timer(duration, route);
+    if(await signedIn()){
+      return new Timer(duration, toHomeScreen);
+    }
+    return new Timer(duration, toLoginScreen);
   }
 
-  route() {
+  toLoginScreen() {
     Navigator.pushReplacement(context, MaterialPageRoute(
       builder: (context) => LoginScreen()
       )
     ); 
+  }
+
+  toHomeScreen() {
+    Navigator.pushReplacement(context, MaterialPageRoute(
+      builder: (context) => HomeScreen()
+      )
+    ); 
+  }
+
+  Future<bool> signedIn() async{
+    if(await _auth.currentUser() != null){
+      return true;
+    }
+    return false;
   }
 }

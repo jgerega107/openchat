@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
+import 'package:openchat/home.dart';
 /*
 Here we will authenticate the user.
 
@@ -61,5 +62,10 @@ class _GoogleSignInSectionState extends State<_GoogleSignInSection>{
     final AuthCredential credential = GoogleAuthProvider.getCredential(idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
     final FirebaseUser user = (await _auth.signInWithCredential(credential)).user;
     print("signed in " + user.displayName);
+
+    Navigator.pushReplacement(context, MaterialPageRoute(
+      builder: (context) => HomeScreen()
+      )
+    ); 
   }
 }
