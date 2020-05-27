@@ -3,11 +3,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:openchat/home.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 /*
 Here we will authenticate the user.
 
 Theme ideas: Possibly solid background with a nice animation or something? Buttons centered, minimal text.
 */
+
+Firestore _firestore = Firestore.instance;
+
+
 class LoginScreen extends StatelessWidget{
   @override
   Widget build(BuildContext context){
@@ -50,18 +55,23 @@ class _GoogleSignInSectionState extends State<_GoogleSignInSection>{
      child: Column(
       children: <Widget>[
         SignInButton(Buttons.Google, onPressed: () {
-          _handleSignIn();
-        })
+          _handleGoogleSignIn();
+        }),
+        SignInButton(Buttons.Apple, onPressed: () {
+
+        },)
       ],
     ));
   }
 
-  void _handleSignIn() async {
+  void _handleGoogleSignIn() async {
     final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
     final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
     final AuthCredential credential = GoogleAuthProvider.getCredential(idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
     final FirebaseUser user = (await _auth.signInWithCredential(credential)).user;
-    print("signed in " + user.displayName);
+    print("Successfully signed in " + user.displayName);
+
+    //create firestore reference
 
     Navigator.pushReplacement(context, MaterialPageRoute(
       builder: (context) => HomeScreen()
