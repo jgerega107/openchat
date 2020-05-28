@@ -19,7 +19,7 @@ class LoginScreen extends StatelessWidget{
     return Scaffold(
         appBar: AppBar(
           title: Text('openchat'),
-          backgroundColor: Color(0xff5100e8),
+          backgroundColor: Color(0xff691b99),
         ),
         body: Center(
           child: Column(
@@ -72,6 +72,7 @@ class _GoogleSignInSectionState extends State<_GoogleSignInSection>{
     print("Successfully signed in " + user.displayName);
 
     //create firestore reference
+    _firestore.collection("users").document(user.uid).setData({'uname':user.displayName, 'pfp':user.photoUrl});
 
     Navigator.pushReplacement(context, MaterialPageRoute(
       builder: (context) => HomeScreen()

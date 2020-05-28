@@ -10,9 +10,13 @@ class HomeScreenState extends State<HomeScreen>{
     return Scaffold(
       appBar: AppBar(
           title: Text('openchat'),
-          backgroundColor: Color(0xff5100e8),
+          backgroundColor: Color(0xff691b99),
         ),
-        body: Center(child: Text("Hello World!"),),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: Color(0xff691b99),
+        icon: Icon(Icons.add), 
+        label: Text("new conversation"),
+        ),
     );
   }
 }
