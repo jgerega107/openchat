@@ -10,7 +10,7 @@ Here we will authenticate the user.
 Theme ideas: Possibly solid background with a nice animation or something? Buttons centered, minimal text.
 */
 
-Firestore _firestore = Firestore.instance;
+final Firestore _firestore = Firestore.instance;
 
 
 class LoginScreen extends StatelessWidget{
@@ -19,14 +19,14 @@ class LoginScreen extends StatelessWidget{
     return Scaffold(
         appBar: AppBar(
           title: Text('openchat'),
-          backgroundColor: Color(0xff691b99),
+          backgroundColor: Theme.of(context).primaryColor,
         ),
         body: Center(
           child: Column(
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.all(20),
-                child: Text("welcome to openchat.", textAlign: TextAlign.center, style: TextStyle(fontFamily: "inconsolata"), textScaleFactor: 2,),
+                child: Text("welcome to openchat.", textAlign: TextAlign.center, textScaleFactor: 2,),
               ),
               Image(image: AssetImage("assets/images/placeholder.png"),
               ),

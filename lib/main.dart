@@ -15,7 +15,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: SplashScreen()
+      home: SplashScreen(),
+      title: "openchat",
+      theme: ThemeData(
+        primaryColor: Color(0xff691b99)
+      ),
     );
   }
 }
