@@ -27,43 +27,74 @@ class HomeScreenState extends State<HomeScreen> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
-            FutureBuilder(
-              future: _getCurrentUser(),
-              builder:
-                  (BuildContext context, AsyncSnapshot<FirebaseUser> user) {
-                if (user.hasData) {
-                  return new UserAccountsDrawerHeader(
-                    accountEmail: Text(user.data.email),
-                    accountName: Text(user.data.displayName),
-                    currentAccountPicture: CircleAvatar(
-                      backgroundImage: Image.network(user.data.photoUrl).image,
-                    ),
-                  );
-                } else {
-                  return new UserAccountsDrawerHeader(
-                    accountEmail: SpinKitWave(
-                      color: Theme.of(context).primaryColor,
-                    ),
-                    accountName: SpinKitWave(
-                      color: Theme.of(context).primaryColor,
-                    ),
-                    currentAccountPicture: CircleAvatar(
-                      child: SpinKitWave(
-                        color: Theme.of(context).primaryColor,
-                      ),
-                    ),
-                  );
-                }
-              },
-            )
-            
+            _DrawerHeader(),
+            ListTile(
+              leading:
+                  Icon(Icons.person, color: Theme.of(context).primaryColor),
+              title: Text('Profile'),
+              onTap: () {},
+            ),
+            ListTile(
+              leading: Icon(
+                Icons.settings,
+                color: Theme.of(context).primaryColor,
+              ),
+              title: Text('Settings'),
+              onTap: () {},
+            ),
           ],
         ),
       ),
     );
   }
+}
 
-  Future<FirebaseUser> _getCurrentUser() async {
-    return await _auth.currentUser();
+class _DrawerHeader extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: _getUserInfo(),
+      builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> userinfo) {
+        if (userinfo.hasData) {
+          return new UserAccountsDrawerHeader(
+            accountEmail: Text(userinfo.data["email"]),
+            accountName: Text(userinfo.data["uname"]),
+            currentAccountPicture: CircleAvatar(
+              backgroundImage: Image.network(userinfo.data["pfp"]).image,
+            ),
+          );
+        } else {
+          return new UserAccountsDrawerHeader(
+            accountEmail: SpinKitWanderingCubes(
+              color: Colors.white,
+              size: 15
+            ),
+            accountName: SpinKitWanderingCubes(
+              color: Colors.white,
+              size: 15
+            ),
+            currentAccountPicture: CircleAvatar(
+              child: SpinKitWanderingCubes(
+                color: Colors.white,
+                size: 15
+              ),
+              backgroundColor: Theme.of(context).primaryColor,
+            ),
+          );
+        }
+      },
+    );
+  }
+  //use this for getting user info from firestore
+  Future<DocumentSnapshot> _getUserInfo() async {
+    FirebaseUser user = await _auth.currentUser();
+    return Firestore.instance
+        .collection('users')
+        .document(user.uid)
+        .get()
+        .then((DocumentSnapshot ds) {
+          print("Read firestore"); //TODO: fix redundant reads, possibly global variables? could mess up flow from profile page
+      return ds;
+    });
   }
 }
