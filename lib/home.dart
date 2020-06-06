@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:openchat/profile.dart';
 
 final Firestore _firestore = Firestore.instance;
 final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -32,7 +33,10 @@ class HomeScreenState extends State<HomeScreen> {
               leading:
                   Icon(Icons.person, color: Theme.of(context).primaryColor),
               title: Text('Profile'),
-              onTap: () {},
+              onTap: () {
+                Navigator.pushReplacement(context,
+                    MaterialPageRoute(builder: (context) => ProfileScreen()));
+              },
             ),
             ListTile(
               leading: Icon(
@@ -54,7 +58,8 @@ class _DrawerHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return FutureBuilder(
       future: _getUserInfo(),
-      builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> userinfo) {
+      builder:
+          (BuildContext context, AsyncSnapshot<DocumentSnapshot> userinfo) {
         if (userinfo.hasData) {
           return new UserAccountsDrawerHeader(
             accountEmail: Text(userinfo.data["email"]),
@@ -65,19 +70,10 @@ class _DrawerHeader extends StatelessWidget {
           );
         } else {
           return new UserAccountsDrawerHeader(
-            accountEmail: SpinKitWanderingCubes(
-              color: Colors.white,
-              size: 15
-            ),
-            accountName: SpinKitWanderingCubes(
-              color: Colors.white,
-              size: 15
-            ),
+            accountEmail: SpinKitWanderingCubes(color: Colors.white, size: 15),
+            accountName: SpinKitWanderingCubes(color: Colors.white, size: 15),
             currentAccountPicture: CircleAvatar(
-              child: SpinKitWanderingCubes(
-                color: Colors.white,
-                size: 15
-              ),
+              child: SpinKitWanderingCubes(color: Colors.white, size: 15),
               backgroundColor: Theme.of(context).primaryColor,
             ),
           );
@@ -85,6 +81,7 @@ class _DrawerHeader extends StatelessWidget {
       },
     );
   }
+
   //use this for getting user info from firestore
   Future<DocumentSnapshot> _getUserInfo() async {
     FirebaseUser user = await _auth.currentUser();
@@ -93,7 +90,8 @@ class _DrawerHeader extends StatelessWidget {
         .document(user.uid)
         .get()
         .then((DocumentSnapshot ds) {
-          print("Read firestore"); //TODO: fix redundant reads, possibly global variables? could mess up flow from profile page
+      print(
+          "Read firestore"); //TODO: fix redundant reads, possibly global variables? could mess up flow from profile page
       return ds;
     });
   }
