@@ -10,18 +10,28 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Center(
-          child: Container(
-            child: Padding(
-              padding: EdgeInsets.to,
+        body: Stack(
+          children: <Widget>[
+            Container(
+              child: _ProfileBackgroundSelection(),
+              height: 250,
             ),
-          ),
+            Container(
+              child: _ProfilePictureSelection(),
+              padding: EdgeInsets.only(top:200),
+              alignment: Alignment.topCenter,
+            ),
+            Align(
+              child: _UsernameSelection(),
+              alignment: Alignment(0,-.2),
+            )
+          ],
         )
     );
   }
 }
 
-class _profilePictureSection extends StatelessWidget {
+class _ProfilePictureSelection extends StatelessWidget {
   Widget build(BuildContext context) {
     return FutureBuilder(
       future: _getUserInfo(),
@@ -30,20 +40,20 @@ class _profilePictureSection extends StatelessWidget {
           return CircleAvatar(
             backgroundColor: Theme.of(context).primaryColor,
             backgroundImage: Image.network(userinfo.data["pfp"]).image,
-            radius: 120,
+            radius: 50,
           );
         }
         return CircleAvatar(
           backgroundColor: Theme.of(context).primaryColor,
           child: SpinKitWanderingCubes(color: Colors.white, size: 15),
-          radius: 120,
+          radius: 50,
         );
       }
     );
   }
 }
 
-class _profileBackgroundSelection extends StatelessWidget{
+class _ProfileBackgroundSelection extends StatelessWidget{
     Widget build(BuildContext context){
       return FutureBuilder(
         future: _getUserInfo(),
@@ -64,6 +74,20 @@ class _profileBackgroundSelection extends StatelessWidget{
                 ),
               );
         },
+      );
+    }
+  }
+
+  class _UsernameSelection extends StatelessWidget{
+    Widget build(BuildContext context){
+      return FutureBuilder(
+        future: _getUserInfo(),
+        builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> userinfo){
+          if(userinfo.hasData){
+            return Text(userinfo.data["uname"], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 40),);
+          }
+          return SpinKitWanderingCubes(color: Colors.white, size: 15);
+        }
       );
     }
   }
