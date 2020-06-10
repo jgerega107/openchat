@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
-final Firestore _firestore = Firestore.instance;
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
 class ProfileScreen extends StatelessWidget {
@@ -120,12 +119,6 @@ class _HandleSelection extends StatelessWidget{
         }
       },
     );
-  }
-}
-
-class _UserInfoSelection extends StatelessWidget{
-  Widget build(BuildContext context){
-    
   }
 }
 
