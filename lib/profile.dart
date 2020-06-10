@@ -10,97 +10,134 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Stack(
+        body: Column(
+      children: <Widget>[
+        Stack(
           children: <Widget>[
+            _ProfileBackgroundSelection(),
             Container(
-              child: _ProfileBackgroundSelection(),
-              height: 250,
-            ),
-            Container(
-              child: _ProfilePictureSelection(),
-              padding: EdgeInsets.only(top:200),
-              alignment: Alignment.topCenter,
-            ),
-            Align(
-              child: _UsernameSelection(),
-              alignment: Alignment(0,-.2),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: <Widget>[
+                  _ProfilePictureSelection(),
+                  RaisedButton(
+                    onPressed: (){},
+                    color: Theme.of(context).primaryColor,
+                    child: Text("Edit"),
+                  )
+                ],
+              ),
+              alignment: Alignment(0, -.2),
+              padding: EdgeInsets.only(top: 200),
+              margin: EdgeInsets.only(bottom: 30),
             )
           ],
-        )
-    );
+        ),
+        _HandleSelection(),
+        _UsernameSelection()
+
+      ],
+    ));
   }
 }
 
 class _ProfilePictureSelection extends StatelessWidget {
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: _getUserInfo(),
-      builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> userinfo){
-        if(userinfo.hasData){
+        future: _getUserInfo(),
+        builder:
+            (BuildContext context, AsyncSnapshot<DocumentSnapshot> userinfo) {
+          if (userinfo.hasData) {
+            return CircleAvatar(
+              backgroundColor: Theme.of(context).primaryColor,
+              backgroundImage: Image.network(userinfo.data["pfp"]).image,
+              radius: 50,
+            );
+          }
           return CircleAvatar(
             backgroundColor: Theme.of(context).primaryColor,
-            backgroundImage: Image.network(userinfo.data["pfp"]).image,
+            child: SpinKitWanderingCubes(color: Colors.white, size: 15),
             radius: 50,
           );
+        });
+  }
+}
+
+class _ProfileBackgroundSelection extends StatelessWidget {
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: _getUserInfo(),
+      builder:
+          (BuildContext context, AsyncSnapshot<DocumentSnapshot> userinfo) {
+        if (userinfo.hasData) {
+          if (userinfo.data["bgurl"] != "") {
+            return Container(
+              height: 250,
+              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
+              child: Image.network(userinfo.data["bgurl"]),
+            );
+          }
         }
-        return CircleAvatar(
-          backgroundColor: Theme.of(context).primaryColor,
-          child: SpinKitWanderingCubes(color: Colors.white, size: 15),
-          radius: 50,
+        return Container(
+          height: 250,
+          decoration: BoxDecoration(color: Theme.of(context).primaryColor),
         );
-      }
+      },
     );
   }
 }
 
-class _ProfileBackgroundSelection extends StatelessWidget{
-    Widget build(BuildContext context){
-      return FutureBuilder(
+class _UsernameSelection extends StatelessWidget {
+  Widget build(BuildContext context) {
+    return FutureBuilder(
         future: _getUserInfo(),
-        builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> userinfo){
-          if(userinfo.hasData){
-            if(userinfo.data["bgurl"] != ""){
-              return Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor
-                ),
-                child: Image.network(userinfo.data["bgurl"]),
-              );
-            }
-          }
-          return Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor
-                ),
-              );
-        },
-      );
-    }
-  }
-
-  class _UsernameSelection extends StatelessWidget{
-    Widget build(BuildContext context){
-      return FutureBuilder(
-        future: _getUserInfo(),
-        builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> userinfo){
-          if(userinfo.hasData){
-            return Text(userinfo.data["uname"], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 40),);
+        builder:
+            (BuildContext context, AsyncSnapshot<DocumentSnapshot> userinfo) {
+          if (userinfo.hasData) {
+            return Text(
+              userinfo.data["uname"],
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 40),
+            );
           }
           return SpinKitWanderingCubes(color: Colors.white, size: 15);
-        }
-      );
-    }
+        });
   }
+}
 
-  Future<DocumentSnapshot> _getUserInfo() async {
-    FirebaseUser user = await _auth.currentUser();
-    return Firestore.instance
-        .collection('users')
-        .document(user.uid)
-        .get()
-        .then((DocumentSnapshot ds) {
-      print(
-          "Read firestore"); //TODO: fix redundant reads, possibly global variables? could mess up flow from profile page
-      return ds;
-    });
+class _HandleSelection extends StatelessWidget{
+  Widget build(BuildContext context){
+    return FutureBuilder(
+      future: _getUserInfo(),
+      builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> userinfo){
+        if(userinfo.hasData){
+          return Text(
+            userinfo.data["handle"],
+            style: TextStyle(fontSize: 18),
+          );
+        }
+        else{
+          return SpinKitWanderingCubes(color: Colors.white, size: 15);
+        }
+      },
+    );
   }
+}
+
+class _UserInfoSelection extends StatelessWidget{
+  Widget build(BuildContext context){
+    
+  }
+}
+
+Future<DocumentSnapshot> _getUserInfo() async {
+  FirebaseUser user = await _auth.currentUser();
+  return Firestore.instance
+      .collection('users')
+      .document(user.uid)
+      .get()
+      .then((DocumentSnapshot ds) {
+    print(
+        "Read firestore"); //TODO: fix redundant reads, possibly global variables? could mess up flow from profile page
+    return ds;
+  });
+}
