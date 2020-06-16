@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:openchat/profileedits.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -20,7 +21,12 @@ class ProfileScreen extends StatelessWidget {
                 children: <Widget>[
                   _ProfilePictureSelection(),
                   RaisedButton(
-                    onPressed: (){},
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ProfileEditScreen()));
+                    },
                     color: Theme.of(context).primaryColor,
                     child: Text("Edit"),
                   )
@@ -34,7 +40,6 @@ class ProfileScreen extends StatelessWidget {
         ),
         _HandleSelection(),
         _UsernameSelection()
-
       ],
     ));
   }
@@ -103,18 +108,18 @@ class _UsernameSelection extends StatelessWidget {
   }
 }
 
-class _HandleSelection extends StatelessWidget{
-  Widget build(BuildContext context){
+class _HandleSelection extends StatelessWidget {
+  Widget build(BuildContext context) {
     return FutureBuilder(
       future: _getUserInfo(),
-      builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> userinfo){
-        if(userinfo.hasData){
+      builder:
+          (BuildContext context, AsyncSnapshot<DocumentSnapshot> userinfo) {
+        if (userinfo.hasData) {
           return Text(
             userinfo.data["handle"],
             style: TextStyle(fontSize: 18),
           );
-        }
-        else{
+        } else {
           return SpinKitWanderingCubes(color: Colors.white, size: 15);
         }
       },

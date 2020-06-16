@@ -19,6 +19,7 @@ class HomeScreenState extends State<HomeScreen> {
         backgroundColor: Theme.of(context).primaryColor,
       ),
       floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {},
         backgroundColor: Theme.of(context).primaryColor,
         icon: Icon(Icons.add),
         label: Text("new conversation"),
