@@ -16,9 +16,12 @@ class ProfileEditScreen extends StatelessWidget {
           children: <Widget>[
             Stack(
               children: <Widget>[
-                _ProfileBackgroundSelection(),
-                Align(
-                  alignment: Alignment(-.7, -.5), //TODO: need to fix alignment bs
+                Container(
+                  child: _ProfileBackgroundSelection(),
+                ),
+                Container(
+                  height: 250,
+                  alignment: Alignment(.9, -.6),
                   child: ClipOval(
                     child: Material(
                       color: Colors.white, // button color
@@ -83,8 +86,11 @@ class ProfileEditScreen extends StatelessWidget {
             )
           ],
         ),
+        Padding(
+          padding: EdgeInsets.only(bottom:20),
+          child: _UsernameSelection(),
+        ),
         _HandleSelection(),
-        _UsernameSelection()
       ],
     ));
   }
@@ -143,9 +149,29 @@ class _UsernameSelection extends StatelessWidget {
         builder:
             (BuildContext context, AsyncSnapshot<DocumentSnapshot> userinfo) {
           if (userinfo.hasData) {
-            return Text(
-              userinfo.data["uname"],
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 40),
+            return Container(
+              width: MediaQuery.of(context).size.width * 0.9,
+              child: Column(
+                children: <Widget>[
+                  Align(
+                    child: Text(
+                      "Nickname",
+                      style: TextStyle(
+                          fontSize: 15, color: Theme.of(context).primaryColor),
+                    ),
+                    alignment: Alignment.centerLeft,
+                  ),
+                  TextField(
+                    style: TextStyle(fontSize: 20),
+                    decoration: InputDecoration(
+                        border: new UnderlineInputBorder(
+                            borderSide: new BorderSide(color:Theme.of(context).primaryColor)),
+                        hintText: 'Can\'t be blank'),
+                    controller:
+                        TextEditingController(text: userinfo.data['uname']),
+                  )
+                ],
+              ),
             );
           }
           return SpinKitWanderingCubes(color: Colors.white, size: 15);
@@ -160,9 +186,28 @@ class _HandleSelection extends StatelessWidget {
       builder:
           (BuildContext context, AsyncSnapshot<DocumentSnapshot> userinfo) {
         if (userinfo.hasData) {
-          return Text(
-            userinfo.data["handle"],
-            style: TextStyle(fontSize: 18),
+          return Container(
+            width: MediaQuery.of(context).size.width * 0.9,
+            child: Column(
+              children: <Widget>[
+                Align(
+                  child: Text(
+                    "Username",
+                    style: TextStyle(
+                        fontSize: 15, color: Theme.of(context).primaryColor),
+                  ),
+                  alignment: Alignment.centerLeft,
+                ),
+                TextField(
+                  style: TextStyle(fontSize: 20),
+                  decoration: InputDecoration(
+                      border: new UnderlineInputBorder(
+                          borderSide: new BorderSide(color: Theme.of(context).primaryColor))),
+                  controller:
+                      TextEditingController(text: userinfo.data['handle']),
+                )
+              ],
+            ),
           );
         } else {
           return SpinKitWanderingCubes(color: Colors.white, size: 15);

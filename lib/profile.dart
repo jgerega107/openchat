@@ -38,8 +38,8 @@ class ProfileScreen extends StatelessWidget {
             )
           ],
         ),
+        _UsernameSelection(),
         _HandleSelection(),
-        _UsernameSelection()
       ],
     ));
   }
