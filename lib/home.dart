@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:openchat/profile.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -69,14 +68,7 @@ class _DrawerHeader extends StatelessWidget {
             ),
           );
         } else {
-          return new UserAccountsDrawerHeader(
-            accountEmail: SpinKitWanderingCubes(color: Colors.white, size: 15),
-            accountName: SpinKitWanderingCubes(color: Colors.white, size: 15),
-            currentAccountPicture: CircleAvatar(
-              child: SpinKitWanderingCubes(color: Colors.white, size: 15),
-              backgroundColor: Theme.of(context).primaryColor,
-            ),
-          );
+          return new CircularProgressIndicator(backgroundColor: Colors.white,);
         }
       },
     );

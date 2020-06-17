@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:openchat/home.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 /*
@@ -54,12 +53,18 @@ class _GoogleSignInSectionState extends State<_GoogleSignInSection>{
     return Padding(padding: EdgeInsets.all(30),
      child: Column(
       children: <Widget>[
-        SignInButton(Buttons.Google, onPressed: () {
-          _handleGoogleSignIn();
-        }),
-        SignInButton(Buttons.Apple, onPressed: () {
-
-        },)
+        RaisedButton(
+          onPressed: () {
+            _handleGoogleSignIn();
+          },
+          color: Colors.white,
+          child: Text("sign in with google"),
+        ),
+        RaisedButton(
+          onPressed: () {},
+          color: Colors.white,
+          child: Text("sign in with apple"),
+        )
       ],
     ));
   }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:openchat/profileedits.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -60,7 +59,7 @@ class _ProfilePictureSelection extends StatelessWidget {
           }
           return CircleAvatar(
             backgroundColor: Theme.of(context).primaryColor,
-            child: SpinKitWanderingCubes(color: Colors.white, size: 15),
+            child: CircularProgressIndicator(backgroundColor: Colors.white,),
             radius: 50,
           );
         });
@@ -103,7 +102,7 @@ class _UsernameSelection extends StatelessWidget {
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 40),
             );
           }
-          return SpinKitWanderingCubes(color: Colors.white, size: 15);
+          return CircularProgressIndicator(backgroundColor: Colors.white,);
         });
   }
 }
@@ -120,7 +119,7 @@ class _HandleSelection extends StatelessWidget {
             style: TextStyle(fontSize: 18),
           );
         } else {
-          return SpinKitWanderingCubes(color: Colors.white, size: 15);
+          return CircularProgressIndicator(backgroundColor: Colors.white,);
         }
       },
     );
