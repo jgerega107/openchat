@@ -110,7 +110,9 @@ class _ProfilePictureSelection extends StatelessWidget {
           }
           return CircleAvatar(
             backgroundColor: Theme.of(context).primaryColor,
-            child: CircularProgressIndicator(backgroundColor: Colors.white,),
+            child:  CircularProgressIndicator(
+                    valueColor: new AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
             radius: 50,
           );
         });
@@ -173,7 +175,9 @@ class _UsernameSelection extends StatelessWidget {
               ),
             );
           }
-          return CircularProgressIndicator(backgroundColor: Colors.white,);
+          return CircularProgressIndicator(
+                    valueColor: new AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+                  );
         });
   }
 }
@@ -209,7 +213,9 @@ class _HandleSelection extends StatelessWidget {
             ),
           );
         } else {
-          return CircularProgressIndicator(backgroundColor: Colors.white,);
+          return CircularProgressIndicator(
+                    valueColor: new AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+                  );
         }
       },
     );

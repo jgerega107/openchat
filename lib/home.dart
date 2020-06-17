@@ -68,7 +68,19 @@ class _DrawerHeader extends StatelessWidget {
             ),
           );
         } else {
-          return new CircularProgressIndicator(backgroundColor: Colors.white,);
+          return new Container(
+              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
+              height:
+                  195, //TODO: possibly a way to make this look better? probably not a good idea trying to match userdrawer by eye
+              child: Center(
+                child: SizedBox(
+                  height: 50,
+                  width: 50,
+                  child: CircularProgressIndicator(
+                    valueColor: new AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+              ));
         }
       },
     );
