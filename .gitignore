@@ -7,9 +7,9 @@
 
 /build
 /.dart_tool
-/android/app/google-services.json
+/android
 .DS_Store
-/ios/GoogleService-Info.plist
+/ios
 .flutter-plugins
 .flutter-plugins-dependencies
 .packages
