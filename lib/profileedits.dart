@@ -144,8 +144,7 @@ class _ProfileBackgroundSelection extends StatefulWidget {
 class _ProfileBackgroundSelectionState
     extends State<_ProfileBackgroundSelection> {
   File _image;
-  bool fromFirestore = false;
-  bool fromLocal = false;
+  int location = -1;
   final picker = ImagePicker();
 
   Future getImage() async {
@@ -156,15 +155,15 @@ class _ProfileBackgroundSelectionState
     });
   }
 
-  Widget getImageFromResource(bool firestore, bool local, AsyncSnapshot<DocumentSnapshot> userinfo){
-    if(local){
+  Widget getImageFromResource(int location, AsyncSnapshot<DocumentSnapshot> userinfo){
+    if(location == 0){
       return Image.file(_image, fit: BoxFit.fill,);
     }
-    else if(firestore){
+    else if(location == 1){
       return Image.network(userinfo.data["bgurl"], fit: BoxFit.fill);
     }
     else{
-      return null;
+      return Icon(Icons.person);
     }
   }
 
@@ -175,10 +174,13 @@ class _ProfileBackgroundSelectionState
           (BuildContext context, AsyncSnapshot<DocumentSnapshot> userinfo) {
         if (userinfo.hasData) {
           if(_image != null){
-            fromLocal = true;
+            location = 0;
           }
-          if (userinfo.data["bgurl"] != "") {
-            fromFirestore = true;
+          else if (userinfo.data["bgurl"] != "") {
+            location = 1;
+          }
+          else{
+            location = 2;
           }
         }
         return Stack(
@@ -187,7 +189,7 @@ class _ProfileBackgroundSelectionState
                   height: 250,
                   decoration:
                       BoxDecoration(color: Theme.of(context).primaryColor),
-                  child: getImageFromResource(fromFirestore, fromLocal, userinfo)
+                  child: getImageFromResource(location, userinfo),
                 ),
                 Container(
                   height: 250,

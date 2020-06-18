@@ -77,7 +77,7 @@ class _GoogleSignInSectionState extends State<_GoogleSignInSection>{
     print("Successfully signed in " + user.displayName);
 
     //create firestore reference
-    _firestore.collection("users").document(user.uid).setData({'uname':user.displayName, 'email':user.email, 'pfp':user.photoUrl, "bgurl":"", "chatscore": 0, "handle" : user.displayName.toLowerCase().replaceAll(" ", "")});
+    _firestore.collection("users").document(user.uid).setData({'uname':user.displayName, 'email':user.email, 'pfp':"", "bgurl":"", "chatscore": 0, "handle" : user.displayName.toLowerCase().replaceAll(" ", "")});
 
     Navigator.pushReplacement(context, MaterialPageRoute(
       builder: (context) => HomeScreen()
