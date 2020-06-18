@@ -2,10 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:openchat/profile.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
-class ProfileEditScreen extends StatelessWidget {
+class ProfileEditScreen extends StatefulWidget {
+  _ProfileEditScreenState createState() => _ProfileEditScreenState();
+}
+
+class _ProfileEditScreenState extends State<ProfileEditScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -13,52 +19,15 @@ class ProfileEditScreen extends StatelessWidget {
       children: <Widget>[
         Stack(
           children: <Widget>[
-            Stack(
-              children: <Widget>[
-                Container(
-                  child: _ProfileBackgroundSelection(),
-                ),
-                Container(
-                  height: 250,
-                  alignment: Alignment(.9, -.6),
-                  child: ClipOval(
-                    child: Material(
-                      color: Colors.white, // button color
-                      child: InkWell(
-                        splashColor:
-                            Theme.of(context).primaryColor, // inkwell color
-                        child: SizedBox(
-                            width: 35, height: 35, child: Icon(Icons.edit)),
-                        onTap: () {},
-                      ),
-                    ),
-                  ),
-                )
-              ],
-            ),
+            _ProfileBackgroundSelection(),
             Container(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: <Widget>[
-                  Stack(
-                    children: <Widget>[
-                      _ProfilePictureSelection(),
-                      ClipOval(
-                        child: Material(
-                          color: Colors.white, // button color
-                          child: InkWell(
-                            splashColor:
-                                Theme.of(context).primaryColor, // inkwell color
-                            child: SizedBox(
-                                width: 35, height: 35, child: Icon(Icons.edit)),
-                            onTap: () {},
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
+                  _ProfilePictureSelection(),
                   RaisedButton(
                     onPressed: () {
+                      //don't do anything to firestore, no changes were made.
                       Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
@@ -69,6 +38,7 @@ class ProfileEditScreen extends StatelessWidget {
                   ),
                   RaisedButton(
                     onPressed: () {
+                      //push updated images to firebase storage, grab URLs, and push into firestore
                       Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
@@ -86,7 +56,7 @@ class ProfileEditScreen extends StatelessWidget {
           ],
         ),
         Padding(
-          padding: EdgeInsets.only(bottom:20),
+          padding: EdgeInsets.only(bottom: 20),
           child: _UsernameSelection(),
         ),
         _HandleSelection(),
@@ -95,49 +65,150 @@ class ProfileEditScreen extends StatelessWidget {
   }
 }
 
-class _ProfilePictureSelection extends StatelessWidget {
+//TODO: start storing initial pfpurl in firebase (or possibly provide one?) as the profile picture is currently read from firebaseuser provider and not firestore.
+class _ProfilePictureSelection extends StatefulWidget {
+  _ProfilePictureSelectionState createState() =>
+      _ProfilePictureSelectionState();
+}
+
+class _ProfilePictureSelectionState extends State<_ProfilePictureSelection> {
+  File _image;
+  bool fromFirestore = false;
+  bool fromLocal = false;
+  final picker = ImagePicker();
+
+  Future getImage() async {
+    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+
+    setState(() {
+      _image = File(pickedFile.path);
+    });
+  }
+
+  ImageProvider getImageFromResource(bool firestore, bool local, AsyncSnapshot<DocumentSnapshot> userinfo){
+    if(local){
+      return Image.file(_image, fit: BoxFit.fill,).image;
+    }
+    else if(firestore){
+      return Image.network(userinfo.data["bgurl"], fit: BoxFit.fill).image;
+    }
+    else{
+      return null;
+    }
+  }
+
   Widget build(BuildContext context) {
     return FutureBuilder(
         future: _getUserInfo(),
         builder:
             (BuildContext context, AsyncSnapshot<DocumentSnapshot> userinfo) {
           if (userinfo.hasData) {
-            return CircleAvatar(
-              backgroundColor: Theme.of(context).primaryColor,
-              backgroundImage: Image.network(userinfo.data["pfp"]).image,
-              radius: 50,
+            return Stack(
+              children: <Widget>[
+                CircleAvatar(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  backgroundImage: getImageFromResource(fromFirestore, fromLocal, userinfo),
+                  radius: 50,
+                ),
+                ClipOval(
+                  child: Material(
+                    color: Colors.white, // button color
+                    child: InkWell(
+                      splashColor:
+                          Theme.of(context).primaryColor, // inkwell color
+                      child: SizedBox(
+                          width: 35, height: 35, child: Icon(Icons.edit)),
+                      onTap: () {},
+                    ),
+                  ),
+                )
+              ],
             );
           }
           return CircleAvatar(
             backgroundColor: Theme.of(context).primaryColor,
-            child:  CircularProgressIndicator(
-                    valueColor: new AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
+            child: CircularProgressIndicator(
+              valueColor: new AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
             radius: 50,
           );
         });
   }
 }
 
-class _ProfileBackgroundSelection extends StatelessWidget {
+class _ProfileBackgroundSelection extends StatefulWidget {
+  _ProfileBackgroundSelectionState createState() =>
+      _ProfileBackgroundSelectionState();
+}
+
+class _ProfileBackgroundSelectionState
+    extends State<_ProfileBackgroundSelection> {
+  File _image;
+  bool fromFirestore = false;
+  bool fromLocal = false;
+  final picker = ImagePicker();
+
+  Future getImage() async {
+    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+
+    setState(() {
+      _image = File(pickedFile.path);
+    });
+  }
+
+  Widget getImageFromResource(bool firestore, bool local, AsyncSnapshot<DocumentSnapshot> userinfo){
+    if(local){
+      return Image.file(_image, fit: BoxFit.fill,);
+    }
+    else if(firestore){
+      return Image.network(userinfo.data["bgurl"], fit: BoxFit.fill);
+    }
+    else{
+      return null;
+    }
+  }
+
   Widget build(BuildContext context) {
     return FutureBuilder(
       future: _getUserInfo(),
       builder:
           (BuildContext context, AsyncSnapshot<DocumentSnapshot> userinfo) {
         if (userinfo.hasData) {
+          if(_image != null){
+            fromLocal = true;
+          }
           if (userinfo.data["bgurl"] != "") {
-            return Container(
-              height: 250,
-              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-              child: Image.network(userinfo.data["bgurl"]),
-            );
+            fromFirestore = true;
           }
         }
-        return Container(
-          height: 250,
-          decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-        );
+        return Stack(
+              children: <Widget>[
+                Container(
+                  height: 250,
+                  decoration:
+                      BoxDecoration(color: Theme.of(context).primaryColor),
+                  child: getImageFromResource(fromFirestore, fromLocal, userinfo)
+                ),
+                Container(
+                  height: 250,
+                  alignment: Alignment(.9, -.6), //don't know if stuff like this is good convention, too used to android
+                  child: ClipOval(
+                    child: Material(
+                      color: Colors.white, // button color
+                      child: InkWell(
+                        splashColor:
+                            Theme.of(context).primaryColor, // inkwell color
+                        child: SizedBox(
+                            width: 35, height: 35, child: Icon(Icons.edit)),
+                        onTap: () {
+                          getImage();
+                        },
+                      ),
+                    ),
+                  ),
+                )
+              ],
+            );
       },
     );
   }
@@ -166,7 +237,8 @@ class _UsernameSelection extends StatelessWidget {
                     style: TextStyle(fontSize: 20),
                     decoration: InputDecoration(
                         border: new UnderlineInputBorder(
-                            borderSide: new BorderSide(color:Theme.of(context).primaryColor)),
+                            borderSide: new BorderSide(
+                                color: Theme.of(context).primaryColor)),
                         hintText: 'Can\'t be blank'),
                     controller:
                         TextEditingController(text: userinfo.data['uname']),
@@ -176,8 +248,9 @@ class _UsernameSelection extends StatelessWidget {
             );
           }
           return CircularProgressIndicator(
-                    valueColor: new AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
-                  );
+            valueColor: new AlwaysStoppedAnimation<Color>(
+                Theme.of(context).primaryColor),
+          );
         });
   }
 }
@@ -205,7 +278,8 @@ class _HandleSelection extends StatelessWidget {
                   style: TextStyle(fontSize: 20),
                   decoration: InputDecoration(
                       border: new UnderlineInputBorder(
-                          borderSide: new BorderSide(color: Theme.of(context).primaryColor))),
+                          borderSide: new BorderSide(
+                              color: Theme.of(context).primaryColor))),
                   controller:
                       TextEditingController(text: userinfo.data['handle']),
                 )
@@ -214,8 +288,9 @@ class _HandleSelection extends StatelessWidget {
           );
         } else {
           return CircularProgressIndicator(
-                    valueColor: new AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
-                  );
+            valueColor: new AlwaysStoppedAnimation<Color>(
+                Theme.of(context).primaryColor),
+          );
         }
       },
     );
