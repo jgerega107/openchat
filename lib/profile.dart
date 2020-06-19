@@ -78,8 +78,9 @@ class _ProfileBackgroundSelection extends StatelessWidget {
           if (userinfo.data["bgurl"] != "") {
             return Container(
               height: 250,
+              width: MediaQuery.of(context).size.width,
               decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-              child: Image.network(userinfo.data["bgurl"]),
+              child: Image.network(userinfo.data["bgurl"], fit: BoxFit.fill,),
             );
           }
         }
