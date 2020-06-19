@@ -57,7 +57,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                           MaterialPageRoute(builder: (context) {
                         _uploadBackground(backgroundImage);
                         _uploadProfilePicture(profilePicture);
-                        return ProfileScreen();
+                        return ProfileScreen(); //TODO: have profile screen refresh somehow? need to better understand asynchronous programming
                       }));
                     },
                     color: Theme.of(context).primaryColor,
