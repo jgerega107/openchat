@@ -10,6 +10,8 @@ final FirebaseAuth _auth = FirebaseAuth.instance;
 final FirebaseStorage _storage = FirebaseStorage.instance;
 final Firestore _firestore = Firestore.instance;
 
+//TODO: fix all of this logic, its really gross
+
 class ProfileEditScreen extends StatefulWidget {
   _ProfileEditScreenState createState() => _ProfileEditScreenState();
 }
@@ -52,11 +54,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   ),
                   RaisedButton(
                     onPressed: () {
+                      _uploadBackground(backgroundImage);
+                      _uploadProfilePicture(profilePicture);
                       //push updated images to firebase storage, grab URLs, and push into firestore
                       Navigator.pushReplacement(context,
                           MaterialPageRoute(builder: (context) {
-                        _uploadBackground(backgroundImage);
-                        _uploadProfilePicture(profilePicture);
+                        
                         return ProfileScreen(); //TODO: have profile screen refresh somehow? need to better understand asynchronous programming
                       }));
                     },
@@ -349,7 +352,7 @@ Future<DocumentSnapshot> _getUserInfo() async {
       .get()
       .then((DocumentSnapshot ds) {
     print(
-        "Read firestore"); //TODO: fix redundant reads, possibly global variables? could mess up flow from profile page
+        "Read firestore"); //TODO: implement cached_network_images
     return ds;
   });
 }

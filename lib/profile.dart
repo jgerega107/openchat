@@ -44,7 +44,8 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 
-class _ProfilePictureSelection extends StatelessWidget {
+class _ProfilePictureSelectionState extends State<_ProfilePictureSelection> {
+  @override
   Widget build(BuildContext context) {
     return FutureBuilder(
         future: _getUserInfo(),
@@ -60,15 +61,27 @@ class _ProfilePictureSelection extends StatelessWidget {
           return CircleAvatar(
             backgroundColor: Theme.of(context).primaryColor,
             child: CircularProgressIndicator(
-                    valueColor: new AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
+              valueColor: new AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
             radius: 50,
           );
         });
   }
 }
 
-class _ProfileBackgroundSelection extends StatelessWidget {
+class _ProfilePictureSelection extends StatefulWidget {
+  _ProfilePictureSelectionState createState() =>
+      _ProfilePictureSelectionState();
+}
+
+class _ProfileBackgroundSelection extends StatefulWidget {
+  _ProfileBackgroundSelectionState createState() =>
+      _ProfileBackgroundSelectionState();
+}
+
+class _ProfileBackgroundSelectionState
+    extends State<_ProfileBackgroundSelection> {
+  @override
   Widget build(BuildContext context) {
     return FutureBuilder(
       future: _getUserInfo(),
@@ -80,7 +93,10 @@ class _ProfileBackgroundSelection extends StatelessWidget {
               height: 250,
               width: MediaQuery.of(context).size.width,
               decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-              child: Image.network(userinfo.data["bgurl"], fit: BoxFit.fill,),
+              child: Image.network(
+                userinfo.data["bgurl"],
+                fit: BoxFit.fill,
+              ),
             );
           }
         }
@@ -106,8 +122,9 @@ class _UsernameSelection extends StatelessWidget {
             );
           }
           return CircularProgressIndicator(
-                    valueColor: new AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
-                  );
+            valueColor: new AlwaysStoppedAnimation<Color>(
+                Theme.of(context).primaryColor),
+          );
         });
   }
 }
@@ -125,8 +142,9 @@ class _HandleSelection extends StatelessWidget {
           );
         } else {
           return CircularProgressIndicator(
-                    valueColor: new AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
-                  );
+            valueColor: new AlwaysStoppedAnimation<Color>(
+                Theme.of(context).primaryColor),
+          );
         }
       },
     );
@@ -141,7 +159,7 @@ Future<DocumentSnapshot> _getUserInfo() async {
       .get()
       .then((DocumentSnapshot ds) {
     print(
-        "Read firestore"); //TODO: fix redundant reads, possibly global variables? could mess up flow from profile page
+        "Read firestore"); //TODO: implement cached_network_images
     return ds;
   });
 }

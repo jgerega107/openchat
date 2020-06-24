@@ -65,9 +65,9 @@ class _DrawerHeader extends StatelessWidget {
             accountName: Text(userinfo.data["uname"]),
             currentAccountPicture: CircleAvatar(
               backgroundColor: Theme.of(context).primaryColor,
-              backgroundImage: Image.network(userinfo.data["pfp"]).image,
+              backgroundImage: userinfo.data["pfp"] != "" ? Image.network(userinfo.data["pfp"]).image : Image(image: AssetImage('assets/images/placeholder.png'),)
             ),
-            decoration: userinfo.data["bgurl"] != ""? BoxDecoration(image: DecorationImage(image: Image.network(userinfo.data["bgurl"]).image, fit: BoxFit.fill)) : null
+            decoration: userinfo.data["bgurl"] != "" ? BoxDecoration(image: DecorationImage(image: Image.network(userinfo.data["bgurl"]).image, fit: BoxFit.fill)) : null
           );
         } else {
           return new Container(
@@ -97,7 +97,7 @@ class _DrawerHeader extends StatelessWidget {
         .get()
         .then((DocumentSnapshot ds) {
       print(
-          "Read firestore"); //TODO: fix redundant reads, possibly global variables? could mess up flow from profile page
+          "Read firestore"); //TODO: implement cached_network_images
       return ds;
     });
   }

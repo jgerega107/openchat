@@ -77,7 +77,7 @@ class _GoogleSignInSectionState extends State<_GoogleSignInSection>{
     print("Successfully signed in " + user.displayName);
 
     //create firestore reference
-    _firestore.collection("users").document(user.uid).setData({'uname':user.displayName, 'email':user.email, 'pfp':"https://firebasestorage.googleapis.com/v0/b/openchat-19dd2.appspot.com/o/placeholder%2Fpogman_alt.png?alt=media&token=b6a9d14f-e445-42dc-b066-a9933383c782", "bgurl":"", "chatscore": 0, "handle" : user.displayName.toLowerCase().replaceAll(" ", "")}); //TODO: fix this stupidity to an icon or something
+    _firestore.collection("users").document(user.uid).setData({'uname':user.displayName, 'email':user.email, 'pfp':"", "bgurl":"", "chatscore": 0, "handle" : user.displayName.toLowerCase().replaceAll(" ", "")});
 
     Navigator.pushReplacement(context, MaterialPageRoute(
       builder: (context) => HomeScreen()
