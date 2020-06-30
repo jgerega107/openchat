@@ -65,7 +65,7 @@ class _DrawerHeader extends StatelessWidget {
             accountName: Text(userinfo.data["uname"]),
             currentAccountPicture: CircleAvatar(
               backgroundColor: Theme.of(context).primaryColor,
-              backgroundImage: userinfo.data["pfp"] != "" ? Image.network(userinfo.data["pfp"]).image : Image(image: AssetImage('assets/images/placeholder.png'),)
+              backgroundImage: userinfo.data["pfp"] != "" ? Image.network(userinfo.data["pfp"]).image : Image.asset('assets/images/placeholder.png').image
             ),
             decoration: userinfo.data["bgurl"] != "" ? BoxDecoration(image: DecorationImage(image: Image.network(userinfo.data["bgurl"]).image, fit: BoxFit.fill)) : null
           );

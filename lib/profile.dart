@@ -54,7 +54,7 @@ class _ProfilePictureSelectionState extends State<_ProfilePictureSelection> {
           if (userinfo.hasData) {
             return CircleAvatar(
               backgroundColor: Theme.of(context).primaryColor,
-              backgroundImage: Image.network(userinfo.data["pfp"]).image,
+              backgroundImage: userinfo.data["pfp"] != "" ? Image.network(userinfo.data["pfp"]).image : Image.asset('assets/images/placeholder.png').image,
               radius: 50,
             );
           }

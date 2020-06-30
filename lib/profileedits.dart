@@ -1,347 +1,297 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:openchat/profile.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:openchat/profile.dart';
 import 'dart:io';
 
+import 'package:openchat/storage.dart';
+
 final FirebaseAuth _auth = FirebaseAuth.instance;
-final FirebaseStorage _storage = FirebaseStorage.instance;
+final CloudStorageService _service = CloudStorageService();
 final Firestore _firestore = Firestore.instance;
 
-//TODO: fix all of this logic, its really gross
+File _pfp;
+File _bg;
 
 class ProfileEditScreen extends StatefulWidget {
-  _ProfileEditScreenState createState() => _ProfileEditScreenState();
+  ProfileEditScreenState createState() => ProfileEditScreenState();
 }
 
-class _ProfileEditScreenState extends State<ProfileEditScreen> {
-  File backgroundImage;
-  File profilePicture;
+class ProfileEditScreenState extends State<ProfileEditScreen> {
+  bool uploading = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Column(
-      children: <Widget>[
-        Stack(
-          children: <Widget>[
-            _ProfileBackgroundSelection(
-              getImageSource: (File image) {
-                backgroundImage = image;
-              },
-            ),
-            Container(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+        body: uploading
+            ? FutureBuilder(
+                future: upload(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<CloudStorageResult> upload) {
+                  if (upload.hasData) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          Text(
+                            'Profile has been updated.',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 15),
+                          ),
+                          RaisedButton(
+                            child: Text("OK"),
+                            color: Theme.of(context).primaryColor,
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          new ProfileScreen()));
+                            },
+                          )
+                        ],
+                      ),
+                    );
+                  }
+                  return Center(
+                    child: CircularProgressIndicator(
+                      valueColor: new AlwaysStoppedAnimation<Color>(
+                          Theme.of(context).primaryColor),
+                    ),
+                  );
+                })
+            : Column(
                 children: <Widget>[
-                  _ProfilePictureSelection(
-                    getImageSource: (File image) {
-                      profilePicture = image;
-                    },
-                  ),
+                  ProfileBackground(),
+                  ProfilePicture(),
                   RaisedButton(
-                    onPressed: () {
-                      //don't do anything to firestore, no changes were made.
-                      Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => ProfileScreen()));
-                    },
-                    color: Theme.of(context).primaryColor,
-                    child: Text("Cancel"),
-                  ),
-                  RaisedButton(
-                    onPressed: () {
-                      _uploadBackground(backgroundImage);
-                      _uploadProfilePicture(profilePicture);
-                      //push updated images to firebase storage, grab URLs, and push into firestore
-                      Navigator.pushReplacement(context,
-                          MaterialPageRoute(builder: (context) {
-                        
-                        return ProfileScreen(); //TODO: have profile screen refresh somehow? need to better understand asynchronous programming
-                      }));
-                    },
-                    color: Theme.of(context).primaryColor,
-                    child: Text("Save"),
-                  ),
+                      onPressed: () {
+                        if (_pfp != null || _bg != null) {
+                          setState(() {
+                            uploading = true;
+                          });
+                        }
+                      },
+                      color: Theme.of(context).primaryColor,
+                      child: Text(
+                        "Finalize",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, color: Colors.white),
+                      ))
                 ],
+              ));
+  }
+}
+
+class ProfileBackground extends StatefulWidget {
+  ProfileBackgroundState createState() => ProfileBackgroundState();
+}
+
+class ProfileBackgroundState extends State<ProfileBackground> {
+  final picker = ImagePicker();
+
+  Future getBackground() async {
+    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _bg = File(pickedFile.path);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: <Widget>[
+        FutureBuilder(
+          future: _getUserInfo(),
+          builder:
+              (BuildContext context, AsyncSnapshot<DocumentSnapshot> userinfo) {
+            //bg has been selected
+            if (_bg != null) {
+              return Container(
+                child: Image.file(
+                  _bg,
+                  fit: BoxFit.fill,
+                ),
+                width: MediaQuery.of(context).size.width,
+                height: 300,
+              );
+            } //no bg selected
+            else if (userinfo.hasData) {
+              //userinfo has data associated with it
+              if (userinfo.data["bgurl"] != "") {
+                //userinfo doesnt have a blank url
+                return Container(
+                  child: Image.network(
+                    userinfo.data["bgurl"],
+                    fit: BoxFit.fill,
+                  ),
+                  width: MediaQuery.of(context).size.width,
+                  height: 300,
+                );
+              }
+            }
+            return Container(
+              //return blank container
+              color: Theme.of(context).primaryColor,
+              width: MediaQuery.of(context).size.width,
+              height: 300,
+            );
+          },
+        ),
+        Container(
+            height: 250,
+            alignment: Alignment(.9,
+                -.6), //don't know if stuff like this is good convention, too used to android
+            child: ClipOval(
+              child: Material(
+                color: Colors.white, // button color
+                child: InkWell(
+                  splashColor: Theme.of(context).primaryColor, // inkwell color
+                  child:
+                      SizedBox(width: 35, height: 35, child: Icon(Icons.edit)),
+                  onTap: () {
+                    getBackground();
+                  },
+                ),
               ),
-              alignment: Alignment(0, -.2),
-              padding: EdgeInsets.only(top: 200),
-              margin: EdgeInsets.only(bottom: 30),
-            )
-          ],
+            ))
+      ],
+    );
+  }
+}
+
+class ProfilePicture extends StatefulWidget {
+  ProfilePictureState createState() => ProfilePictureState();
+}
+
+class ProfilePictureState extends State<ProfilePicture> {
+  final picker = ImagePicker();
+  Future getPfp() async {
+    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _pfp = File(pickedFile.path);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+        child: Stack(
+      children: <Widget>[
+        FutureBuilder(
+          future: _getUserInfo(),
+          builder:
+              (BuildContext context, AsyncSnapshot<DocumentSnapshot> userinfo) {
+            if (_pfp != null) {
+              return Container(
+                padding: EdgeInsets.only(top: 20),
+                child: CircleAvatar(
+                  child: FlatButton(
+                    child: Icon(Icons.edit),
+                    onPressed: () {
+                      getPfp();
+                    },
+                  ),
+                  backgroundImage: Image.file(
+                    _pfp,
+                    fit: BoxFit.fill,
+                  ).image,
+                  radius: 50,
+                ),
+              );
+            } else if (userinfo.hasData) {
+              if (userinfo.data["pfp"] != "") {
+                return Container(
+                  padding: EdgeInsets.only(top: 20),
+                  child: CircleAvatar(
+                    child: FlatButton(
+                      child: Icon(Icons.edit),
+                      onPressed: () {
+                        getPfp();
+                      },
+                    ),
+                    backgroundImage: Image.network(
+                      userinfo.data["pfp"],
+                      fit: BoxFit.fill,
+                    ).image,
+                    radius: 50,
+                  ),
+                );
+              }
+            }
+            return Container(
+              padding: EdgeInsets.only(top: 20),
+              child: CircleAvatar(
+                child: FlatButton(
+                  child: Icon(Icons.edit),
+                  onPressed: () {
+                    getPfp();
+                  },
+                ),
+                backgroundImage: Image.asset(
+                  'assets/images/placeholder.png',
+                  fit: BoxFit.fill,
+                ).image,
+                radius: 50,
+              ),
+            );
+          },
         ),
-        Padding(
-          padding: EdgeInsets.only(bottom: 20),
-          child: _UsernameSelection(),
-        ),
-        _HandleSelection(),
       ],
     ));
   }
 }
 
-class _ProfilePictureSelection extends StatefulWidget {
-  final Function(File) getImageSource;
-  _ProfilePictureSelection({this.getImageSource});
+Future<CloudStorageResult> upload() async {
+  CloudStorageResult pfpResult;
+  CloudStorageResult bgResult;
 
-  _ProfilePictureSelectionState createState() =>
-      _ProfilePictureSelectionState();
-}
+  FirebaseUser user = await _auth.currentUser();
+  DocumentReference userRef = _firestore.collection("users").document(user.uid);
 
-class _ProfilePictureSelectionState extends State<_ProfilePictureSelection> {
-  File _image;
-  int location = -1;
-  final picker = ImagePicker();
-
-  Future getImage() async {
-    final pickedFile = await picker.getImage(source: ImageSource.gallery);
-
-    setState(() {
-      if(pickedFile != null){
-              _image = File(pickedFile.path);
+  if (_pfp != null && _bg != null) {
+    bgResult = await _service.uploadImage(imageToUpload: _bg, title: "bg");
+    pfpResult = await _service.uploadImage(
+      imageToUpload: _pfp,
+      title: "pfp",
+    );
+    _firestore.runTransaction((Transaction tx) async {
+      DocumentSnapshot postSnapshot = await tx.get(userRef);
+      if (postSnapshot.exists) {
+        await tx.update(userRef, <String, String>{'pfp': pfpResult.imageUrl});
+        await tx.update(userRef, <String, String>{'bgurl': bgResult.imageUrl});
       }
     });
+    return bgResult;
+  } else if (_pfp != null) {
+    pfpResult = await _service.uploadImage(imageToUpload: _pfp, title: "pfp");
 
-    widget.getImageSource(_image);
-  }
-
-  ImageProvider getImageFromResource(
-      int location, AsyncSnapshot<DocumentSnapshot> userinfo) {
-    if (location == 0) {
-      return Image.file(
-        _image,
-        fit: BoxFit.fill,
-      ).image;
-    } else if (location == 1) {
-      return Image.network(userinfo.data["pfp"], fit: BoxFit.fill).image;
-    } else {
-      return null;
-    }
-  }
-
-  Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: _getUserInfo(),
-        builder:
-            (BuildContext context, AsyncSnapshot<DocumentSnapshot> userinfo) {
-          if (userinfo.hasData) {
-            if (userinfo.hasData) {
-              if (_image != null) {
-                location = 0;
-              } else if (userinfo.data["pfp"] != "") {
-                location = 1;
-              } else {
-                location = 2;
-              }
-            }
-            return Stack(
-              children: <Widget>[
-                CircleAvatar(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  backgroundImage: getImageFromResource(location, userinfo),
-                  radius: 50,
-                ),
-                ClipOval(
-                  child: Material(
-                    color: Colors.white, // button color
-                    child: InkWell(
-                      splashColor:
-                          Theme.of(context).primaryColor, // inkwell color
-                      child: SizedBox(
-                          width: 35, height: 35, child: Icon(Icons.edit)),
-                      onTap: () {
-                        getImage();
-                      },
-                    ),
-                  ),
-                )
-              ],
-            );
-          }
-          return CircleAvatar(
-            backgroundColor: Theme.of(context).primaryColor,
-            child: CircularProgressIndicator(
-              valueColor: new AlwaysStoppedAnimation<Color>(Colors.white),
-            ),
-            radius: 50,
-          );
-        });
-  }
-}
-
-class _ProfileBackgroundSelection extends StatefulWidget {
-  final Function(File) getImageSource;
-  _ProfileBackgroundSelection({this.getImageSource});
-
-  _ProfileBackgroundSelectionState createState() =>
-      _ProfileBackgroundSelectionState();
-}
-
-class _ProfileBackgroundSelectionState
-    extends State<_ProfileBackgroundSelection> {
-  File _image;
-  int location = -1;
-  final picker = ImagePicker();
-
-  Future getImage() async {
-    final pickedFile = await picker.getImage(source: ImageSource.gallery);
-
-    setState(() {
-      if(pickedFile != null){
-              _image = File(pickedFile.path);
+    _firestore.runTransaction((Transaction tx) async {
+      DocumentSnapshot postSnapshot = await tx.get(userRef);
+      if (postSnapshot.exists) {
+        await tx.update(userRef, <String, String>{'pfp': pfpResult.imageUrl});
       }
     });
-
-    widget.getImageSource(_image);
+    return pfpResult;
+  } else if (_bg != null) {
+    bgResult = await _service.uploadImage(imageToUpload: _bg, title: "bg");
+    _firestore.runTransaction((Transaction tx) async {
+      DocumentSnapshot postSnapshot = await tx.get(userRef);
+      if (postSnapshot.exists) {
+        await tx.update(userRef, <String, String>{'bgurl': bgResult.imageUrl});
+      }
+    });
+    return bgResult;
   }
-
-  Widget getImageFromResource(
-      int location, AsyncSnapshot<DocumentSnapshot> userinfo) {
-    if (location == 0) {
-      return Image.file(
-        _image,
-        fit: BoxFit.fill,
-      );
-    } else if (location == 1) {
-      return Image.network(userinfo.data["bgurl"], fit: BoxFit.fill);
-    } else {
-      return null;
-    }
-  }
-
-  Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _getUserInfo(),
-      builder:
-          (BuildContext context, AsyncSnapshot<DocumentSnapshot> userinfo) {
-        if (userinfo.hasData) {
-          if (_image != null) {
-            location = 0;
-          } else if (userinfo.data["bgurl"] != "") {
-            location = 1;
-          } else {
-            location = 2;
-          }
-        }
-        return Stack(
-          children: <Widget>[
-            Container(
-              height: 250,
-              width: MediaQuery.of(context).size.width,
-              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-              child: getImageFromResource(location, userinfo),
-            ),
-            Container(
-              height: 250,
-              alignment: Alignment(.9,
-                  -.6), //don't know if stuff like this is good convention, too used to android
-              child: ClipOval(
-                child: Material(
-                  color: Colors.white, // button color
-                  child: InkWell(
-                    splashColor:
-                        Theme.of(context).primaryColor, // inkwell color
-                    child: SizedBox(
-                        width: 35, height: 35, child: Icon(Icons.edit)),
-                    onTap: () {
-                      getImage();
-                    },
-                  ),
-                ),
-              ),
-            )
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _UsernameSelection extends StatelessWidget {
-  Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: _getUserInfo(),
-        builder:
-            (BuildContext context, AsyncSnapshot<DocumentSnapshot> userinfo) {
-          if (userinfo.hasData) {
-            return Container(
-              width: MediaQuery.of(context).size.width * 0.9,
-              child: Column(
-                children: <Widget>[
-                  Align(
-                    child: Text(
-                      "Nickname",
-                      style: TextStyle(
-                          fontSize: 15, color: Theme.of(context).primaryColor),
-                    ),
-                    alignment: Alignment.centerLeft,
-                  ),
-                  TextField(
-                    style: TextStyle(fontSize: 20),
-                    decoration: InputDecoration(
-                        border: new UnderlineInputBorder(
-                            borderSide: new BorderSide(
-                                color: Theme.of(context).primaryColor)),
-                        hintText: 'Can\'t be blank'),
-                    controller:
-                        TextEditingController(text: userinfo.data['uname']),
-                  )
-                ],
-              ),
-            );
-          }
-          return CircularProgressIndicator(
-            valueColor: new AlwaysStoppedAnimation<Color>(
-                Theme.of(context).primaryColor),
-          );
-        });
-  }
-}
-
-class _HandleSelection extends StatelessWidget {
-  Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _getUserInfo(),
-      builder:
-          (BuildContext context, AsyncSnapshot<DocumentSnapshot> userinfo) {
-        if (userinfo.hasData) {
-          return Container(
-            width: MediaQuery.of(context).size.width * 0.9,
-            child: Column(
-              children: <Widget>[
-                Align(
-                  child: Text(
-                    "Username",
-                    style: TextStyle(
-                        fontSize: 15, color: Theme.of(context).primaryColor),
-                  ),
-                  alignment: Alignment.centerLeft,
-                ),
-                TextField(
-                  style: TextStyle(fontSize: 20),
-                  decoration: InputDecoration(
-                      border: new UnderlineInputBorder(
-                          borderSide: new BorderSide(
-                              color: Theme.of(context).primaryColor))),
-                  controller:
-                      TextEditingController(text: userinfo.data['handle']),
-                )
-              ],
-            ),
-          );
-        } else {
-          return CircularProgressIndicator(
-            valueColor: new AlwaysStoppedAnimation<Color>(
-                Theme.of(context).primaryColor),
-          );
-        }
-      },
-    );
-  }
+  return CloudStorageResult();
 }
 
 Future<DocumentSnapshot> _getUserInfo() async {
@@ -351,48 +301,7 @@ Future<DocumentSnapshot> _getUserInfo() async {
       .document(user.uid)
       .get()
       .then((DocumentSnapshot ds) {
-    print(
-        "Read firestore"); //TODO: implement cached_network_images
+    print("Read firestore"); //TODO: implement cached_network_images
     return ds;
-  });
-}
-
-void _uploadProfilePicture(File image) async {
-  String bgurl;
-  FirebaseUser user = await _auth.currentUser();
-  DocumentReference userRef = _firestore.collection("users").document(user.uid);
-  await userRef.get().then((DocumentSnapshot ds) async {
-    //upload to firestore
-    StorageReference backgroundLoc =
-        _storage.ref().child(user.uid).child("pfp.jpg");
-    StorageUploadTask task = backgroundLoc.putFile(image);
-    bgurl = await (await task.onComplete).ref.getDownloadURL();
-  });
-  //now update user reference
-  _firestore.runTransaction((Transaction tx) async {
-    DocumentSnapshot postSnapshot = await tx.get(userRef);
-    if (postSnapshot.exists) {
-      await tx.update(userRef, <String, String>{'pfp': bgurl});
-    }
-  });
-}
-
-void _uploadBackground(File image) async {
-  String bgurl;
-  FirebaseUser user = await _auth.currentUser();
-  DocumentReference userRef = _firestore.collection("users").document(user.uid);
-  await userRef.get().then((DocumentSnapshot ds) async {
-    //upload to firestore
-    StorageReference backgroundLoc =
-        _storage.ref().child(user.uid).child("background.jpg");
-    StorageUploadTask task = backgroundLoc.putFile(image);
-    bgurl = await (await task.onComplete).ref.getDownloadURL();
-  });
-  //now update user reference
-  _firestore.runTransaction((Transaction tx) async {
-    DocumentSnapshot postSnapshot = await tx.get(userRef);
-    if (postSnapshot.exists) {
-      await tx.update(userRef, <String, String>{'bgurl': bgurl});
-    }
   });
 }
