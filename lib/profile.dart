@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -54,7 +55,13 @@ class _ProfilePictureSelectionState extends State<_ProfilePictureSelection> {
           if (userinfo.hasData) {
             return CircleAvatar(
               backgroundColor: Theme.of(context).primaryColor,
-              backgroundImage: userinfo.data["pfp"] != "" ? Image.network(userinfo.data["pfp"]).image : Image.asset('assets/images/placeholder.png').image,
+              backgroundImage: userinfo.data["pfp"] != ""
+                  ? Image(
+                          image:
+                              CachedNetworkImageProvider(userinfo.data["pfp"]),
+                          fit: BoxFit.fill)
+                      .image
+                  : Image.asset('assets/images/placeholder.png').image,
               radius: 50,
             );
           }
@@ -90,14 +97,21 @@ class _ProfileBackgroundSelectionState
         if (userinfo.hasData) {
           if (userinfo.data["bgurl"] != "") {
             return Container(
-              height: 250,
-              width: MediaQuery.of(context).size.width,
-              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-              child: Image.network(
-                userinfo.data["bgurl"],
-                fit: BoxFit.fill,
-              ),
-            );
+                height: 250,
+                width: MediaQuery.of(context).size.width,
+                decoration:
+                    BoxDecoration(color: Theme.of(context).primaryColor),
+                child: CachedNetworkImage(
+                  imageUrl: userinfo.data["bgurl"],
+                  imageBuilder: (context, imageProvider) => Container(
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: imageProvider,
+                        fit: BoxFit.fill,
+                      ),
+                    ),
+                  ),
+                ));
           }
         }
         return Container(
@@ -158,8 +172,7 @@ Future<DocumentSnapshot> _getUserInfo() async {
       .document(user.uid)
       .get()
       .then((DocumentSnapshot ds) {
-    print(
-        "Read firestore"); //TODO: implement cached_network_images
+    print("Read firestore");
     return ds;
   });
 }

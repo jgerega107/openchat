@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -126,13 +127,21 @@ class ProfileBackgroundState extends State<ProfileBackground> {
               if (userinfo.data["bgurl"] != "") {
                 //userinfo doesnt have a blank url
                 return Container(
-                  child: Image.network(
-                    userinfo.data["bgurl"],
-                    fit: BoxFit.fill,
-                  ),
-                  width: MediaQuery.of(context).size.width,
-                  height: 300,
-                );
+                    height: 300,
+                    width: MediaQuery.of(context).size.width,
+                    decoration:
+                        BoxDecoration(color: Theme.of(context).primaryColor),
+                    child: CachedNetworkImage(
+                      imageUrl: userinfo.data["bgurl"],
+                      imageBuilder: (context, imageProvider) => Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: imageProvider,
+                            fit: BoxFit.fill,
+                          ),
+                        ),
+                      ),
+                    ));
               }
             }
             return Container(
@@ -218,10 +227,8 @@ class ProfilePictureState extends State<ProfilePicture> {
                         getPfp();
                       },
                     ),
-                    backgroundImage: Image.network(
-                      userinfo.data["pfp"],
-                      fit: BoxFit.fill,
-                    ).image,
+                    backgroundImage:
+                        CachedNetworkImageProvider(userinfo.data["pfp"]),
                     radius: 50,
                   ),
                 );
@@ -301,7 +308,7 @@ Future<DocumentSnapshot> _getUserInfo() async {
       .document(user.uid)
       .get()
       .then((DocumentSnapshot ds) {
-    print("Read firestore"); //TODO: implement cached_network_images
+    print("Read firestore");
     return ds;
   });
 }

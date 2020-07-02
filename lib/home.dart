@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -61,19 +62,28 @@ class _DrawerHeader extends StatelessWidget {
           (BuildContext context, AsyncSnapshot<DocumentSnapshot> userinfo) {
         if (userinfo.hasData) {
           return new UserAccountsDrawerHeader(
-            accountEmail: Text(userinfo.data["email"]),
-            accountName: Text(userinfo.data["uname"]),
-            currentAccountPicture: CircleAvatar(
-              backgroundColor: Theme.of(context).primaryColor,
-              backgroundImage: userinfo.data["pfp"] != "" ? Image.network(userinfo.data["pfp"]).image : Image.asset('assets/images/placeholder.png').image
-            ),
-            decoration: userinfo.data["bgurl"] != "" ? BoxDecoration(image: DecorationImage(image: Image.network(userinfo.data["bgurl"]).image, fit: BoxFit.fill)) : null
-          );
+              accountEmail: Text(userinfo.data["email"]),
+              accountName: Text(userinfo.data["uname"]),
+              currentAccountPicture: CircleAvatar(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  backgroundImage: userinfo.data["pfp"] != ""
+                      ? Image(
+                              image: CachedNetworkImageProvider(
+                                  userinfo.data["pfp"]),
+                              fit: BoxFit.fill)
+                          .image
+                      : Image.asset('assets/images/placeholder.png').image),
+              decoration: userinfo.data["bgurl"] != ""
+                  ? BoxDecoration(
+                      image: DecorationImage(
+                          image: CachedNetworkImageProvider(
+                              userinfo.data["bgurl"]),
+                          fit: BoxFit.fill))
+                  : null);
         } else {
           return new Container(
               decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-              height:
-                  195, //TODO: possibly a way to make this look better? probably not a good idea trying to match userdrawer by eye
+              height: 195,
               child: Center(
                 child: SizedBox(
                   height: 50,
@@ -96,8 +106,7 @@ class _DrawerHeader extends StatelessWidget {
         .document(user.uid)
         .get()
         .then((DocumentSnapshot ds) {
-      print(
-          "Read firestore"); //TODO: implement cached_network_images
+      print("Read firestore");
       return ds;
     });
   }

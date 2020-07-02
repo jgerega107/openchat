@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:openchat/home.dart';
 import 'dart:async';
 import 'login.dart';
+
 /*
 Here within the SplashScreen, a number of operations will be happening. 
 Firstly, we will check to see if a user is currently logged in, and if so, just progress to the home of the app.
@@ -11,48 +12,44 @@ As usual with all other screens within the app, time will be spent making it loo
 */
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
-class SplashScreen extends StatefulWidget{
+class SplashScreen extends StatefulWidget {
   SplashState createState() => SplashState();
 }
 
-class SplashState extends State<SplashScreen>{
+class SplashState extends State<SplashScreen> {
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).primaryColor,
-      body: Center(child: Image(image: AssetImage("assets/images/placeholder.png"))
-    ));
+        backgroundColor: Theme.of(context).primaryColor,
+        body: Center(
+            child: Image(image: AssetImage("assets/images/placeholder.png"))));
   }
 
-  void initState(){
+  void initState() {
     super.initState();
     startTime();
   }
 
   startTime() async {
     var duration = new Duration(seconds: 3);
-    if(await signedIn()){
+    if (await signedIn()) {
       return new Timer(duration, toHomeScreen);
     }
     return new Timer(duration, toLoginScreen);
   }
 
   toLoginScreen() {
-    Navigator.pushReplacement(context, MaterialPageRoute(
-      builder: (context) => LoginScreen()
-      )
-    ); 
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => LoginScreen()));
   }
 
   toHomeScreen() {
-    Navigator.pushReplacement(context, MaterialPageRoute(
-      builder: (context) => HomeScreen()
-      )
-    ); 
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => HomeScreen()));
   }
 
-  Future<bool> signedIn() async{
-    if(await _auth.currentUser() != null){
+  Future<bool> signedIn() async {
+    if (await _auth.currentUser() != null) {
       return true;
     }
     return false;
